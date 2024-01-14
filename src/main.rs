@@ -108,12 +108,12 @@ fn generate_rss(lang: String, country: String, offers: Vec<Offer>) -> String {
                 .url(offer.image_url.to_string())
                 .mime_type("image/avif".to_string())
                 .build();
+            let template = offer_to_template(&offer);
             ItemBuilder::default()
                 .title(Some(offer.title.to_string()))
-                // .description(Some(offer.description.to_string()))
                 .pub_date(Some(offer.start_date.to_string()))
                 .link(Some(offer_url))
-                .content(Some("FOO BAR".to_string())) //TODO, Tera template
+                .content(Some(template)) //TODO, Tera template
                 .enclosure(Some(enclosure))
                 .build()
         })
@@ -128,4 +128,25 @@ fn offer_to_url(lang: &String, country: &String, offer: &Offer) -> String {
         "https://www.ibood.com/{}/s-{}/o/{}/{}",
         lang, country, offer.slug, offer.offer_id
     )
+}
+
+fn offer_to_template(offer: &Offer) -> String {
+    let total_price = offer.delivery_price_value + offer.price_value;
+    let total_price = format!("{:.2}", total_price);
+    let template = format!(
+        "
+        <h1>{offer}</h1>
+        <img src='{image_url}' />
+        <p>{description}</p>
+        <p>{price_currency} {price_value} (+ {delivery_currency} {delivery_value} delivery = {price_currency} {total_price})</p>
+    ",
+        offer = offer.title.to_string(),
+        image_url = offer.image_url.to_string(),
+        description = offer.description.to_string(),
+        price_currency = offer.price_currency.to_string(),
+        price_value = offer.price_value.to_string(),
+        delivery_currency = offer.delivery_price_currency.to_string(),
+        delivery_value = offer.delivery_price_value.to_string()
+    );
+    template.trim().to_string()
 }
