@@ -34,7 +34,7 @@ fn main() {
     let url = format!("https://www.ibood.com/{}/s-{}", args.lang, args.country);
     let data = get_data(url);
     let rss = generate_rss(args.lang, args.country, data);
-    print!("{:?}", rss);
+    print!("{}", rss);
 }
 
 fn get_data(url: String) -> Vec<Offer> {
