@@ -10,7 +10,11 @@ Run `cargo build --release`.
 
 ## Building the docker image
 
-Run `docker build -t ibood-rss .`
+Run `docker build -t iboodrss .`
+
+## Using the prebuild image from docker hub
+
+You can find the prebuild image [here](https://hub.docker.com/r/jeroenpelgrims/iboodrss).
 
 ## TODO at some point to make the image smaller
 
