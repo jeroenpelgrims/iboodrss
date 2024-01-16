@@ -17,4 +17,4 @@ COPY lighttpd.conf /etc/lighttpd/lighttpd.conf
 RUN chmod +x /script.sh
 RUN crontab /etc/cron.d/crontab.txt
 
-CMD ["sh", "-c", "/usr/sbin/cron && lighttpd -D -f /etc/lighttpd/lighttpd.conf"]
+CMD ["sh", "-c", "/usr/sbin/cron && ./script.sh && lighttpd -D -f /etc/lighttpd/lighttpd.conf"]
