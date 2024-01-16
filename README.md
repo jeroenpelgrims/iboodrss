@@ -1,6 +1,6 @@
 # iBOOD RSS feed generator (unofficial)
 
-If you don't care about the code but just want to use the RSS feed, you can find it here: https://iboodrss.jeroenpelgrims.be
+If you don't care about the code but just want to use the RSS feed, you can find it here: https://iboodrss.jeroenpelgrims.com
 
 ## What is this?
 
