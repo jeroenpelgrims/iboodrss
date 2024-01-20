@@ -1,3 +1,4 @@
+use chrono::Local;
 use clap::Parser;
 use curl::easy::Easy;
 use rss::{ChannelBuilder, Item, ItemBuilder};
@@ -100,25 +101,20 @@ fn generate_rss(lang: String, country: String, offers: Vec<Offer>) -> String {
         .description("Unofficial iBOOD RSS feed".to_string())
         .build();
 
-    let mut items: Vec<Item> = offers
+    let content = offers
         .iter()
-        .map(|offer| {
-            let offer_url = offer_to_url(&lang, &country, &offer);
-            let enclosure = rss::EnclosureBuilder::default()
-                .url(offer.image_url.to_string())
-                .mime_type("image/avif".to_string())
-                .build();
-            let template = offer_to_template(&offer);
-            ItemBuilder::default()
-                .title(Some(offer.title.to_string()))
-                .pub_date(Some(offer.start_date.to_string()))
-                .link(Some(offer_url))
-                .content(Some(template)) //TODO, Tera template
-                .enclosure(Some(enclosure))
-                .build()
-        })
-        .collect();
-    channel.items.append(&mut items);
+        .map(|offer| offer_to_template(&country, &lang, &offer))
+        .collect::<Vec<String>>()
+        .join("\n");
+
+    let now = Local::now().format("%b %e, %Y").to_string();
+    let title = format!("iBOOD offers - {}", now);
+    let item = ItemBuilder::default()
+        .title(Some(title.to_string()))
+        .link(Some("https://www.ibood.com".to_string()))
+        .content(Some(content))
+        .build();
+    channel.items.push(item);
 
     channel.to_string()
 }
@@ -130,16 +126,22 @@ fn offer_to_url(lang: &String, country: &String, offer: &Offer) -> String {
     )
 }
 
-fn offer_to_template(offer: &Offer) -> String {
+fn offer_to_template(country: &String, lang: &String, offer: &Offer) -> String {
     let total_price = offer.delivery_price_value + offer.price_value;
     let total_price = format!("{:.2}", total_price);
     let template = format!(
         "
-        <h1>{offer}</h1>
-        <img src='{image_url}' />
-        <p>{description}</p>
-        <p>{price_currency} {price_value} (+ {delivery_currency} {delivery_value} delivery = {price_currency} {total_price})</p>
+        <div>
+            <h1>
+                <a href=\"{offer_url}\">{offer}</a>
+            </h1>
+            <img src='{image_url}' />
+            <p>{description}</p>
+            <p>{price_currency} {price_value} (+ {delivery_currency} {delivery_value} delivery = {price_currency} {total_price})</p>
+            <hr/>
+        </div>
     ",
+        offer_url = offer_to_url(lang, country, offer),
         offer = offer.title.to_string(),
         image_url = offer.image_url.to_string(),
         description = offer.description.to_string(),
