@@ -1,7 +1,7 @@
 use chrono::Local;
 use clap::Parser;
 use curl::easy::Easy;
-use rss::{ChannelBuilder, Item, ItemBuilder};
+use rss::{ChannelBuilder, ItemBuilder};
 use scraper::{Html, Selector};
 use serde_json::Value;
 use std::str;
@@ -107,10 +107,11 @@ fn generate_rss(lang: String, country: String, offers: Vec<Offer>) -> String {
         .collect::<Vec<String>>()
         .join("\n");
 
-    let now = Local::now().format("%b %e, %Y").to_string();
-    let title = format!("iBOOD offers - {}", now);
+    let now = Local::now();
+    let title = format!("iBOOD offers - {}", now.format("%b %e, %Y"));
     let item = ItemBuilder::default()
         .title(Some(title.to_string()))
+        .pub_date(Some(now.to_rfc2822()))
         .link(Some("https://www.ibood.com".to_string()))
         .content(Some(content))
         .build();
