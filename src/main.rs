@@ -1,10 +1,11 @@
 use chrono::Local;
 use clap::Parser;
 use curl::easy::Easy;
-use rss::{ChannelBuilder, ItemBuilder};
+use rss::{ChannelBuilder, Guid, ItemBuilder};
 use scraper::{Html, Selector};
 use serde_json::Value;
 use std::str;
+use uuid::Uuid;
 
 #[derive(Parser, Debug)]
 #[command()]
@@ -109,8 +110,13 @@ fn generate_rss(lang: String, country: String, offers: Vec<Offer>) -> String {
 
     let now = Local::now();
     let title = format!("iBOOD offers - {}", now.format("%b %e, %Y"));
+    let id = Uuid::new_v4().to_string();
     let item = ItemBuilder::default()
         .title(Some(title.to_string()))
+        .guid(Some(Guid {
+            permalink: true,
+            value: id,
+        }))
         .pub_date(Some(now.to_rfc2822()))
         .link(Some("https://www.ibood.com".to_string()))
         .content(Some(content))
