@@ -24,7 +24,7 @@ struct Offer {
     slug: String,
     description: String,
     image_url: String,
-    start_date: String,
+    // start_date: String,
     delivery_price_currency: String,
     delivery_price_value: f64,
     price_currency: String,
@@ -52,14 +52,14 @@ fn get_data(url: String) -> Vec<Offer> {
             slug: offer["slug"].as_str().unwrap().to_string(),
             description: offer["description"].as_str().unwrap().to_string(),
             image_url: offer["image"].as_str().unwrap().to_string(),
-            start_date: offer["start"].as_str().unwrap().to_string(),
+            // start_date: offer["start"].as_str().unwrap().to_string(),
             delivery_price_currency: offer["deliveryPrice"]["currency"]
                 .as_str()
                 .unwrap()
                 .to_string(),
-            delivery_price_value: offer["deliveryPrice"]["value"].as_f64().unwrap() as f64,
+            delivery_price_value: offer["deliveryPrice"]["value"].as_f64().unwrap(),
             price_currency: offer["price"]["currency"].as_str().unwrap().to_string(),
-            price_value: offer["price"]["value"].as_f64().unwrap() as f64,
+            price_value: offer["price"]["value"].as_f64().unwrap(),
         })
         .collect();
 
@@ -71,7 +71,7 @@ fn get_html(url: &str) -> String {
     let mut data = Vec::new();
 
     let _ = handle.useragent("curl/7.88.1");
-    handle.url(&url).unwrap();
+    handle.url(url).unwrap();
     {
         let mut transfer = handle.transfer();
         transfer
@@ -91,8 +91,7 @@ fn get_next_data(html: &str) -> String {
     let fragment = Html::parse_fragment(html);
     let selector = Selector::parse("script#__NEXT_DATA__").unwrap();
     let script_tag = fragment.select(&selector).next().unwrap();
-    let json = script_tag.inner_html();
-    json
+    script_tag.inner_html()
 }
 
 fn generate_rss(lang: String, country: String, offers: Vec<Offer>) -> String {
@@ -104,7 +103,7 @@ fn generate_rss(lang: String, country: String, offers: Vec<Offer>) -> String {
 
     let content = offers
         .iter()
-        .map(|offer| offer_to_template(&country, &lang, &offer))
+        .map(|offer| offer_to_template(&country, &lang, offer))
         .collect::<Vec<String>>()
         .join("\n");
 
@@ -149,13 +148,13 @@ fn offer_to_template(country: &String, lang: &String, offer: &Offer) -> String {
         </div>
     ",
         offer_url = offer_to_url(lang, country, offer),
-        offer = offer.title.to_string(),
-        image_url = offer.image_url.to_string(),
-        description = offer.description.to_string(),
-        price_currency = offer.price_currency.to_string(),
-        price_value = offer.price_value.to_string(),
-        delivery_currency = offer.delivery_price_currency.to_string(),
-        delivery_value = offer.delivery_price_value.to_string()
+        offer = offer.title,
+        image_url = offer.image_url,
+        description = offer.description,
+        price_currency = offer.price_currency,
+        price_value = offer.price_value,
+        delivery_currency = offer.delivery_price_currency,
+        delivery_value = offer.delivery_price_value
     );
     template.trim().to_string()
 }
